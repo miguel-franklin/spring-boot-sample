@@ -43,8 +43,8 @@ pipeline {
         stage('Deploy') {
             when { tag "release-*" }
             steps {
-                sh 'docker build -t miguel-franklin/sample-$version .'
-                sh 'docker push miguel-franklin/sample-$version'
+                sh 'docker build --build-arg JAR_FILE=target/spring-boot-sample.jar -t miguelfranklin/sample-$version .'
+                sh 'docker push miguelfranklin/sample-$version'
             }
         }
     }
