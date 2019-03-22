@@ -23,7 +23,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'mvn -B -V -DskipTests -e clean package'
-                sh "docker build -f Dockerfile --build-arg JAR_FILE=target/spring-boot-sample.jar -t miguelfranklin/sample-$version"
+                sh "docker build -f Dockerfile --build-arg JAR_FILE=target/spring-boot-sample.jar -t miguelfranklin/sample-$version ."
             }
         }
         stage('Test') {
