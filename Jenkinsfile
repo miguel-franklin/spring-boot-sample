@@ -24,16 +24,25 @@ pipeline {
         stage('Version') {
             steps {
                 sh "echo \'\ninfo.build.version=\'$version >> src/main/resources/application.properties || true"
-                sh "mvn -B -V -U -e versions:set -DnewVersion=$version"
+                sh "mvn -B -V -e versions:set -DnewVersion=$version"
             }
         }
 
         stage('Build') {
             steps {
-                sh 'mvn -B -V -U -e clean package'
+                sh 'mvn -B -V -DskipTests -e clean package'
             }
         }
-
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
         stage('Archive') {
             steps {
                 junit allowEmptyResults: true, testResults: '**/target/**/TEST*.xml'
