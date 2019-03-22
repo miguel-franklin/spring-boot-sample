@@ -44,7 +44,8 @@ pipeline {
                 junit allowEmptyResults: true, testResults: '**/target/**/TEST*.xml'
             }
         }
-        stage('Deploy') {            
+        stage('Deploy') {
+            when { tag "release-*" }
             steps {
                 withDockerRegistry([ credentialsId: "docker-registry", url: "" ]) {
                     sh "docker push miguelfranklin/sample-$version"                
