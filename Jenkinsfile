@@ -17,13 +17,13 @@ pipeline {
         stage('Version') {
             steps {
                 sh "echo \'\ninfo.build.version=\'$version >> src/main/resources/application.properties || true"
-                sh "mvn -B -V -e versions:set -DnewVersion=$version"
-                sh "docker build -f Dockerfile --build-arg JAR_FILE=target/spring-boot-sample.jar -t miguelfranklin/sample-$version"
+                sh "mvn -B -V -e versions:set -DnewVersion=$version"                
             }
         }
         stage('Build') {
             steps {
                 sh 'mvn -B -V -DskipTests -e clean package'
+                sh "docker build -f Dockerfile --build-arg JAR_FILE=target/spring-boot-sample.jar -t miguelfranklin/sample-$version"
             }
         }
         stage('Test') {
@@ -41,8 +41,7 @@ pipeline {
                 junit allowEmptyResults: true, testResults: '**/target/**/TEST*.xml'
             }
         }
-        stage('Deploy') {
-            when { tag "release-*" }
+        stage('Deploy') {            
             steps {
                 sh "docker push miguelfranklin/sample-$version"                
             }
