@@ -12,6 +12,6 @@ public class PessoaTest {
     @Test
     public void testCalculo() {
         Pessoa p = new Pessoa();
-        Assert.assertEquals(p.calculo(1, 3), 3);
+        Assert.assertEquals(p.calculo(1, 3), 4);
     }
 }

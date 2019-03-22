@@ -12,7 +12,6 @@ public class SampleApplicationTest {
 
 	@Test
 	public void contextLoads() {
-		Assert.assertTrue(false);
 	}
 
 }
