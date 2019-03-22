@@ -43,7 +43,7 @@ pipeline {
         stage('Deploy') {
             when { tag "release-*"
             steps {
-                sh 'docker build -t miguel-franklin/sample-$version' .
+                sh 'docker build -t miguel-franklin/sample-$version .'
                 sh 'docker push miguel-franklin/sample-$version'
             }
         }
