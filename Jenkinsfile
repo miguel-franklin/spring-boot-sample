@@ -1,4 +1,7 @@
 pipeline {
+    environment {        
+        registryCredential = 'dockerregistry'
+    }
     agent {
         dockerfile {
             filename 'Dockerfile.build'
@@ -43,7 +46,9 @@ pipeline {
         }
         stage('Deploy') {            
             steps {
-                sh "docker push miguelfranklin/sample-$version"                
+                withDockerRegistry([ credentialsId: "docker-registry", url: "" ]) {
+                    sh "docker push miguelfranklin/sample-$version"                
+                }
             }
         }
     }
