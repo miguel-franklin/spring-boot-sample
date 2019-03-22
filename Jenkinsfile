@@ -1,9 +1,9 @@
 pipeline {
     agent {
-        docker {
-            image 'maven:3-alpine'
-            args '-v /root/.m2:/root/.m2'
-        }   
+        dockerfile {
+            filename 'Dockerfile.build'
+            args '-v /tmp:/tmp -v /root/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock'
+        }
     }
     stages {
         stage('Configure') {
@@ -18,6 +18,7 @@ pipeline {
             steps {
                 sh "echo \'\ninfo.build.version=\'$version >> src/main/resources/application.properties || true"
                 sh "mvn -B -V -e versions:set -DnewVersion=$version"
+                sh "docker build -f Dockerfile --build-arg JAR_FILE=target/spring-boot-sample.jar -t miguelfranklin/sample-$version"
             }
         }
         stage('Build') {
@@ -43,8 +44,7 @@ pipeline {
         stage('Deploy') {
             when { tag "release-*" }
             steps {
-                sh 'docker build -t miguel-franklin/sample-$version .'
-                sh 'docker push miguel-franklin/sample-$version'
+                sh "docker push miguelfranklin/sample-$version"                
             }
         }
     }
