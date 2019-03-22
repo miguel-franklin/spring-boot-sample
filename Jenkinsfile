@@ -7,31 +7,45 @@ pipeline {
     }
     stages {
         stage('Configure') {
-            version = '1.0.' + env.BUILD_NUMBER
-            currentBuild.displayName = version
-
-            properties([
-                    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')),
-                    [$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/miguel-franklin/spring-boot-sample/'],
-                    pipelineTriggers([[$class: 'GitHubPushTrigger']])
-                ])
+            steps {
+                   script {
+                    version = '1.0.' + env.BUILD_NUMBER
+                    currentBuild.displayName = version
+                }
+            }
         }
-
-        stage('Checkout') {
-            git 'https://github.com/miguel-franklin/spring-boot-sample'
-        }
-
         stage('Version') {
-            sh "echo \'\ninfo.build.version=\'$version >> src/main/resources/application.properties || true"
-            sh "mvn -B -V -U -e versions:set -DnewVersion=$version"
+            steps {
+                sh "echo \'\ninfo.build.version=\'$version >> src/main/resources/application.properties || true"
+                sh "mvn -B -V -e versions:set -DnewVersion=$version"
+            }
         }
-
         stage('Build') {
-            sh 'mvn -B -V -U -e clean package'
+            steps {
+                sh 'mvn -B -V -DskipTests -e clean package'
+            }
         }
-
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
         stage('Archive') {
-            junit allowEmptyResults: true, testResults: '**/target/**/TEST*.xml'
+            steps {
+                junit allowEmptyResults: true, testResults: '**/target/**/TEST*.xml'
+            }
+        }
+        stage('Deploy') {
+            when { tag "release-*" }
+            steps {
+                sh 'docker build -t miguel-franklin/sample-$version .'
+                sh 'docker push miguel-franklin/sample-$version'
+            }
         }
     }
 }
