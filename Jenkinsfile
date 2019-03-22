@@ -8,26 +8,18 @@ pipeline {
     stages {
         stage('Configure') {
             steps {
-                script {
+                   script {
                     version = '1.0.' + env.BUILD_NUMBER
                     currentBuild.displayName = version
                 }
             }
         }
-
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/miguel-franklin/spring-boot-sample'
-            }
-        }
-
         stage('Version') {
             steps {
                 sh "echo \'\ninfo.build.version=\'$version >> src/main/resources/application.properties || true"
                 sh "mvn -B -V -e versions:set -DnewVersion=$version"
             }
         }
-
         stage('Build') {
             steps {
                 sh 'mvn -B -V -DskipTests -e clean package'
@@ -46,6 +38,13 @@ pipeline {
         stage('Archive') {
             steps {
                 junit allowEmptyResults: true, testResults: '**/target/**/TEST*.xml'
+            }
+        }
+        stage('Deploy') {
+            when { tag "release-*"
+            steps {
+                sh 'docker build -t miguel-franklin/sample-$version' .
+                sh 'docker push miguel-franklin/sample-$version'
             }
         }
     }
